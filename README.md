@@ -3,7 +3,7 @@
 American Checkers game using the SFML C++ game library with:
 - Mandatory maximum captures
 - Backward captures
-- 5 minute timer to track players' time moving pieces
+- A 5 minute timer to track players' time moving pieces
 
 ## Piece Outlines
 
@@ -11,18 +11,18 @@ American Checkers game using the SFML C++ game library with:
 Normal outline for checkers
 
 ### Blue Outline
-Maximum jump is found and pieces with blue outline must be moved
+A maximum jump is found, and pieces with a blue outline must be moved
 
 Two single jumps are found: 
 
 ![alt text](images/twosinglejumps.png)
 
-Only the piece with the most amount of jumps is outlined in blue; the piece to the right of it does not have the longest path:
+Only the piece with the most jumps is outlined in blue; the piece to the right of it does not have the longest path so it doesn't have a blue outline:
 
 ![alt text](images/longestjump.png)
 
 ### Yellow Outline
-Yellow outline is the piece that is selected and moves for that piece are displayed (shown below in the moves display)
+The yellow outline indicates that the piece that is selected, and the moves for that piece are displayed (shown below in the moves display)
 
 ## Moves display
 The green moves are places where the piece can move to 
@@ -40,21 +40,21 @@ The green moves are places where the piece can move to
 ## Classes
 
 ### Piece Class
-- Kinging
 - Takes care of Movement validation / moving piece circle position (normal move, single jump, and multi-jump)
-- Drawing pieces onto board
+- Making piece into a king
+- Drawing pieces onto the board
 - Handles piece selection 
 
 ### Board Class
-- Drawing board squares and initializing pieces to boar(vector of vectors of shared pointers to Piece objects) 
-- Drawing the moves when piece is selected
+- Draws board squares and initializes pieces to board(vector of vectors of shared pointers to Piece object) 
+- Drawing the moves when a piece is selected
 - Finding attacks
-- Counting and displaying number of pieces taken and handles losing condition (no pieces left)
-- Moving piece to board coordinate
+- Counting and displaying the number of pieces taken and handles losing condition (no pieces left)
+- Moving a piece to a board coordinate
 
 ### Timer Class
-- Tracks timer during current player's turn and displays it to screen
-- Handles losing condition when a player runs out of time
+- Tracks the timer during the current player's turn and displays it in the window
+- Handles the losing condition when a player runs out of time
 
 
 
