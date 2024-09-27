@@ -22,7 +22,7 @@ Only the piece with the most amount of jumps is outlined in blue; the piece to t
 ![alt text](image-8.png)
 
 ### Yellow Outline
-Yellow outline is the piece that is selected and moves for that piece are displayed (shown below in the moves display section)
+Yellow outline is the piece that is selected and moves for that piece are displayed (shown below in the moves display)
 
 ## Moves display
 The green moves are places where the piece can move to 
