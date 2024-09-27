@@ -116,8 +116,6 @@ int main()
 							//	whiteClockTxt.rotate(180);
 							//	redClockTxt.rotate(180);
 
-								//board.resetJumpMoves();
-
 								// find other color attacks
 								jumpsAvailable = board.findAttacks(turn/*, window*/);
 

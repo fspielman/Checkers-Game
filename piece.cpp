@@ -1,8 +1,5 @@
-//#include <SFML/Graphics.hpp>
 #include <iostream>
-//#include "piece.hpp"
 #include "board.hpp"
-//#include <string>
 #include <set>
 
 #define tile 100
@@ -49,22 +46,12 @@ bool Piece::isOpponent(const std::shared_ptr<Piece>& piece) const {
 		return this->getColorString() != piece->getColorString();
 }
 
-/*std::vector<std::pair<int, int>> Piece::jumpingMoves(const int& x, const int& y) {
-	std::vector<std::pair<int, int>> moves = 
-	{
-        {x + 2, y + 2}, {x - 2, y + 2},
-        {x + 2, y - 2}, {x - 2, y - 2} 
-    };
-	return moves;
-}*/
-
 bool Piece::jumpDetected(const int& currentRow, const int& currentCol, Board& board/*, std::vector<std::pair<int, int>>& visitedSquares*/){
     std::vector<std::pair<int, int>> possibleJumps = 
 	{
 		{currentCol + 2, currentRow + 2}, {currentCol - 2, currentRow + 2},
 		{currentCol + 2, currentRow - 2}, {currentCol - 2, currentRow - 2}
     };
-	//this->jumpingMoves(currentCol, currentRow);
 	
 	bool foundJump = false;
 	multiJumpPiece = false;
@@ -72,7 +59,7 @@ bool Piece::jumpDetected(const int& currentRow, const int& currentCol, Board& bo
 	for (const auto& jump : possibleJumps) {
 		int endCol = jump.first;
 		int endRow = jump.second;
-		if (/*endCol >= 0 && endCol < 8 && endRow >= 0 && endRow < 8*/ board.isWithinBounds(endRow,endCol)) {
+		if (board.isWithinBounds(endRow,endCol)) {
 
 			if (this->isValidAttack(currentRow, currentCol, endRow, endCol, board)) {
 				if (std::find(visitedSquares.begin(), visitedSquares.end(), std::make_pair(currentRow, currentCol)) == visitedSquares.end()) {
@@ -87,9 +74,8 @@ bool Piece::jumpDetected(const int& currentRow, const int& currentCol, Board& bo
 						std::cout << "VISITED --- " << visit.first << " " << visit.second << std::endl;
 					}
 
-					std::cout << "YO ATTACK ENDS AT --- ROW: " << endRow << " Col: " << endCol << std::endl;
+					std::cout << "ATTACK ENDS AT --- ROW: " << endRow << " Col: " << endCol << std::endl;
 				}
-				else std::cout << "NAH AT R " << endRow << " C " << endCol << std::endl;
 
 				foundJump = true;
 			}
@@ -116,7 +102,7 @@ void Piece::findLongestPath(const std::pair<int, int>& current, std::vector<std:
             std::find(path.begin(), path.end(), nextPos) == path.end()
 			&& this->isValidAttack(current.first, current.second, nextPos.first, nextPos.second, board)) {
             morePaths = true;
-            findLongestPath(nextPos, path,/* longestPath,*/ board);
+            findLongestPath(nextPos, path, board);
         }
     }
 
@@ -141,21 +127,12 @@ std::vector < std::vector<std::pair<int, int>>> Piece::getLongestPath() const { 
 bool Piece::isValidAttack(const int& startRow, const int& startCol, const int& endRow, const int& endCol, Board board) const {
 	if (!(abs(endCol - startCol) == 2) || !(abs(endRow - startRow) == 2)) return false;
 
-	//std::cout << "START ROW - " << startRow << " START COL - " << startCol << std::endl;
-	//std::cout << "START ROW - " << startY << " START COL - " << startX << std::endl;
-
 	int midCol = (startCol + endCol) / 2;
 	int midRow = (startRow + endRow) / 2;
 
-	//std::cout << "MID ROW - " << midRow << " MID COL - " << midCol << std::endl;
-
-	//std::cout << "END ROW - " << endY << " END COL - " << endX << std::endl;
-
 	auto middlePiece = board.getBoard(midRow, midCol);
-	//if (this->isOpponent(middlePiece)) std::cout << "OPPONENT PIECE CHECK\n";
 
 	auto endPoint = board.getBoard(endRow, endCol);
-	//if (endPoint == nullptr) std::cout << "NO PIECE AT ENDPOINT\n";
 
 	return !endPoint &&  this->isOpponent(middlePiece);
 }
@@ -163,7 +140,6 @@ bool Piece::isValidAttack(const int& startRow, const int& startCol, const int& e
 void Piece::attack(const int& startRow, const int& startCol, const int& endRow, const int& endCol, Board& board) {
 	turnEnd = true;
 	checker.setPosition(endCol * tile + halfTile, endRow * tile + halfTile);
-	std::cout << "ENDX _ " << endCol << " ENDY _ " << endRow << std::endl;
 	board.setBoard((startRow + endRow) / 2, (startCol + endCol) / 2, nullptr);
 	if ((color == "White" && endRow == 7) || (color == "Red" && endRow == 0) && !isKing) {
 		this->makeKing();
@@ -188,7 +164,6 @@ void Piece::move(const int& startRow, const int& startCol, int endRow, int endCo
 
 // if two moves occur -> one as attack and one as multi -> both do same move 
 void Piece::multiJump(const int& startRow, const int& startCol, const int& endRow, const int& endCol, Board& board, std::pair<int,int> endPos) {
-	std::cout << "YOYOOOOOOOOOOOOOOOOOOOOOOOOOOO\n";
 	turnEnd = true;
 	checker.setPosition(endCol * tile + halfTile, endRow * tile + halfTile);
 	std::vector<std::pair<int, int>> chosenPath;
@@ -245,12 +220,8 @@ void Piece::selectPiece(bool& shapeSelected, Board& board, bool attackFound) {
 				if (!isLongestAttackFound) {
 					if (!longestPath.empty()) {
 						if (longestPath.size() > 1) {
-							std::cout << "LPATH SIZE GREATER THAN 1 :" << longestPath.size() << std::endl;
 							for (const auto& path : longestPath) {
-								//for (const auto& p : path) {
-								//for (int i = 0; i < path.size(); ++i) {
-									pathPoints.push_back(path.back());
-								//}
+								pathPoints.push_back(path.back());
 							}
 							isLongestAttackFound = true;
 						}
@@ -261,22 +232,14 @@ void Piece::selectPiece(bool& shapeSelected, Board& board, bool attackFound) {
 						}
 					}
 				}
-				std::cout << "ENTERING MULTIJUMP\n";
-
-				for (const auto& test : pathPoints) {
-					std::cout << "TESTING!@# " << test.first << " " << test.second << std::endl;
-				}
-				
 
 				auto it = std::find(pathPoints.begin(), pathPoints.end(), end);
 				if (isLongestAttackFound && it != pathPoints.end()) {
-					std::cout << "CORRECT\n";
 					this->multiJump(startRow, startCol, endRow, endCol, board, end);
 					board.setMultiJump(false);
 					isLongestAttackFound = false;
 				}
 				else {
-					std::cout << "WRONG\n";
 					turnEnd = false;
 					checker.setOutlineColor(sf::Color::Blue);
 				}
@@ -286,22 +249,11 @@ void Piece::selectPiece(bool& shapeSelected, Board& board, bool attackFound) {
 				checker.setOutlineColor(DarkGray);
 			}
 			else {
-				std::cout << "CANT ATTACK\n";
 				turnEnd = false;
-				//sf::Color DarkGray(99, 102, 106);
-				//std::cout << "COLOR IS ______ " << this->getOutlineColorString();
-
-				//wrong move or piece is clicked
-				//if (this->getOutlineColorString() == "DarkGray") {
-					//checker.setOutlineColor(DarkGray);
-				//}
-				//else {
 				checker.setOutlineColor(sf::Color::Blue);
-				//}
 			}
 		}
 		else {
-			std::cout << "MOVING MATE\n";
 			this->move(startRow, startCol, endRow, endCol);
 			checker.setOutlineColor(DarkGray);
 		}
@@ -313,10 +265,6 @@ void Piece::selectPiece(bool& shapeSelected, Board& board, bool attackFound) {
 bool Piece::getisKing() const { return isKing; }
 
 void Piece::draw(sf::RenderWindow& win) { win.draw(checker); }
-
-/*int Piece::getRow() const { return row; }
-
-int Piece::getCol() const { return col; }*/
 
 bool Piece::getTurnEnd() const { return turnEnd; }
 

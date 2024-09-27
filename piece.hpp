@@ -22,7 +22,6 @@ public:
 	void makeKing();
 	bool isValidMove(const int& startRow, const int& startCol, const int& endRow, const int& endCol) const;
 	bool isOpponent(const std::shared_ptr<Piece>& piece) const;
-	//std::vector<std::pair<int, int>> jumpingMoves(const int& x, const int& y);
 	bool jumpDetected(const int& currentRow, const int& currentCol, Board& board);
 	void findLongestPath(const std::pair<int, int>& current, std::vector<std::pair<int, int>>& path, Board& board);
 	std::vector < std::vector<std::pair<int, int>>> getLongestPath() const;
