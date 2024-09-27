@@ -25,7 +25,7 @@ Piece::Piece(std::string Color, int row, int col) : color(Color), isKing(false) 
 
 void Piece::makeKing() {
 	isKing = true;
-	crownTexture.loadFromFile("crown2.png");
+	crownTexture.loadFromFile("images\\king.png");
 	checker.setTexture(&crownTexture);
 	std::cout << color << " KING\n";
 }
