@@ -7,28 +7,32 @@
 #define quarterTile 25
 #define DarkGray sf::Color(99, 102, 106)
 
+//getters
+sf::RenderWindow& Board::getWindow() const { return window; }
+
+bool Board::getMultiJump() const { return multiJump; }
+
+std::shared_ptr<Piece> Board::getBoard(int row, int col) { return board[row][col]; }
+
+//setters
+void Board::setMultiJump(bool boolean) { 
+	if (boolean == true) {
+		multiJump = true;
+	}
+	else {
+		multiJump = false;
+	}
+}
+
+void Board::setBoard(int row, int col, std::shared_ptr<Piece> piece) { board[row][col] = piece; }
+
+//methods
 Board::Board(sf::RenderWindow& win) : window(win) {
 	multiJump = false;
 }
 
+//initialize starting piece positions to board
 void Board::initBoard() {
-	board = std::vector<std::vector<std::shared_ptr<Piece>>>(8, std::vector<std::shared_ptr<Piece>>(8, nullptr));
-
-/*	//for testing conditions
-	board[4][1] = std::make_shared<Piece>(Piece("Red", 4, 1));
-	board[2][3] = std::make_shared<Piece>(Piece("White", 2, 3));
-	board[1][2] = std::make_shared<Piece>(Piece("White", 1, 2));
-	board[1][4] = std::make_shared<Piece>(Piece("White", 1, 4));*/
-	/*board[1][2] = std::make_shared<Piece>(Piece("White", 1, 2));
-	board[1][4] = std::make_shared<Piece>(Piece("White", 1, 4));
-	board[2][3] = std::make_shared<Piece>(Piece("White", 2, 3));
-	//board[0][3] = std::make_shared<Piece>(Piece("White", 0, 3));
-	board[0][3] = std::make_shared<Piece>(Piece("White", 0, 3));
-	board[0][5] = std::make_shared<Piece>(Piece("White", 0, 5));
-	board[1][0] = std::make_shared<Piece>(Piece("White", 1, 0));
-	board[4][1] = std::make_shared<Piece>(Piece("Red", 4, 1));
-	board[4][3] = std::make_shared<Piece>(Piece("Red", 4, 3));//*/
-	///*
 	for (int row = 0; row < boardSize; ++row) {
 		for (int col = 0; col < boardSize; ++col) {
 			if (row < 3 && ((row + col) % 2 == 1)) {
@@ -44,10 +48,9 @@ void Board::initBoard() {
 			}
 		}
 	}
-//	*/
-	available = true;
 }
 
+//drawing tiles to screen
 void Board::drawBoard() {
 	int squareSize = 100;
 	sf::RectangleShape square(sf::Vector2f(squareSize, squareSize));
@@ -71,28 +74,19 @@ void Board::drawMoves(const std::string& color, const int& startRow, const int& 
 	int size = piece->getVisitedSquares().size();
 
 	if (multiJump) {
-		std::cout << "LONGEST PATH:::::::::::::\n";
-
+		//draws purple circles to show attack path (not on final attack positions) 
 		for (const auto& p : piece->getLongestPath()) {
-			for (const auto& path : p) {
-				std::cout << path.first << " " << path.second << "\t";
-			}
-			std::cout << std::endl;
-		}
-
-		for (const auto& p : piece->getLongestPath()) {
-			for (int i = 1; i < p.size(); ++i) {	// skip piece's initial square
+			for (int i = 1; i < p.size(); ++i) {	// skip piece's initial square -> don't display purple circle on coordinate of selected piece
 				this->drawMultiPath(p[i].first, p[i].second);
 			}
 		}
-
+		
+		//draws green circles for final attack positions
 		for (const auto& p : piece->getLongestPath()) {
-			for (const auto& path : p) {
-				this->drawingMove(p.back().first, p.back().second);
-			}
+			this->drawingMove(p.back().first, p.back().second);
 		}
 	}
-	else if (board[startRow][startCol]->getOutlineColorString() == "Blue") {
+	else if (board[startRow][startCol]->getOutlineColor() == sf::Color::Blue) {
 		this->drawSingleJump(color, startRow, startCol);
 	}
 	else {
@@ -105,7 +99,7 @@ bool Board::isWithinBounds(int row, int col) {
 }
 
 void Board::drawSingleJump(const std::string& color, int startRow, int startCol) {
-	std::shared_ptr<Piece> piece = board[startRow][startCol];
+	std::shared_ptr<Piece> piece = board[startRow][startCol]; //selected piece
 
 	std::vector<std::pair<int, int>> directions = {
 		{1, 1}, {1, -1}, {-1, 1}, {-1, -1}
@@ -129,7 +123,7 @@ void Board::drawSingleJump(const std::string& color, int startRow, int startCol)
 }
 
 void Board::drawSingleMoves(const std::string& color, const int startRow, const int& startCol) {
-	std::vector < std::pair<int, int>> directions;
+	std::vector<std::pair<int, int>> directions;
 	
 	this->populateDirections(color, startRow, startCol, directions);
 
@@ -148,6 +142,7 @@ void Board::drawSingleMoves(const std::string& color, const int startRow, const 
 	}
 }
 
+//drawing pieces to board
 void Board::draw() {
 	for (int row = 0; row < boardSize; ++row) {
 		for (int col = 0; col < boardSize; ++col) {
@@ -158,69 +153,68 @@ void Board::draw() {
 	}
 }
 
-std::shared_ptr<Piece> Board::getBoard(int row, int col) { return board[row][col]; }
-
-void Board::setBoard(int row, int col, std::shared_ptr<Piece> piece) { board[row][col] = piece; }
-
 void Board::changeTurn(std::string& turn) {
 	if (turn == "White") {
 		turn = "Red";
-		std::cout << "RED TURN\n";
 	}
 	else {
 		turn = "White";
-		std::cout << "WHITE TURN\n";
 	}
 }
 
 bool Board::findAttacks(const std::string& turn) {
-	found = false;
+	isAttackFound = false;
 
 	std::vector<std::vector<std::pair<int, int>>> longestAttack;  
 	int maxPathLength = 0;  
-
+	
+	//keep track of attacks found
 	std::vector<std::pair<int, int>> attacksFound;
+	//keep track of single attacks
 	std::vector<std::pair<int, int>> singleAttacks;
 
 	for (int row = 0; row < boardSize; ++row) {
 		for (int col = 0; col < boardSize; ++col) {
 			if (board[row][col] != nullptr && board[row][col]->getColorString() == turn) {
-				if (board[row][col]->jumpDetected(row, col, *this/*, visitedSquares*/)) {
+				//if jump found
+				if (board[row][col]->jumpDetected(row, col, *this)) {
 					if (!(board[row][col]->getMultiJumpPiece())) { 
-						singleAttacks.push_back({ row,col });
+						singleAttacks.push_back({ row,col }); //if multijump is not found for piece add it to single attack vector
 					}
-
+					//multi-jump found -> find longest path
 					std::vector<std::pair<int, int>> path;
 					std::shared_ptr<Piece> piece = board[row][col];
-					piece->findLongestPath(board[row][col]->getVisitedSquares()[0], path,/* longestPath,*/ *this);
+					piece->findLongestPath(board[row][col]->getVisitedSquares()[0], path, *this);
 
 					std::vector<std::vector<std::pair<int, int>>> currentPath = piece->getLongestPath();
 					int currentPathLength = piece->getLongestPath()[0].size();
 
-					std::cout << "PATH SIZE----" << piece->getLongestPath()[0].size() << std::endl;
+					std::cout << "PATH SIZE----" << currentPathLength << std::endl;
+					//if current multi-jump path length is greater than the current maximum multi-jump path length
 					if (currentPathLength > maxPathLength) {
 						maxPathLength = currentPathLength;
 						longestAttack = currentPath;
                     }
+					//if current path length = max path length -> add it to longest attack vector -> multiple multi-jumps for piece
 					else if (currentPathLength == maxPathLength) {
 						longestAttack.insert(longestAttack.end(), currentPath.begin(), currentPath.end());
 					}
 
-					found = true;
+					isAttackFound = true;
 				}
 			}
 		}
 	}
 
+	//setting single jump outline to gray if multijump is found
 	if (this->getMultiJump()) {
 		for (const auto& attack : singleAttacks) {
-			//setting single jump outline to gray if multijump is found
 			board[attack.first][attack.second]->setOutlineColor(DarkGray);
 		}
 	}
 
 	//longest attack
-	if (found) {
+	if (isAttackFound) {
 		std::cout << "Longest attack path has length: " << maxPathLength << std::endl;
 		for (const auto& pos : longestAttack) {
 			if (board[pos[0].first][pos[0].second])
@@ -228,9 +222,10 @@ bool Board::findAttacks(const std::string& turn) {
 		}
 	}
 
-	return found;
+	return isAttackFound;
 }
 
+//resetting blue attack outline after player attacks and next turn is started
 void Board::resetAttackOutline() {
 	for (int row = 0; row < boardSize; ++row) {
 		for (int col = 0; col < boardSize; ++col) {
@@ -241,6 +236,7 @@ void Board::resetAttackOutline() {
 	}
 }
 
+//drawing green circles -> end positions
 void Board::drawingMove(const int& row, const int& col) {
 	sf::CircleShape moveCircle(25);
 	moveCircle.setFillColor(sf::Color::Green);
@@ -248,6 +244,7 @@ void Board::drawingMove(const int& row, const int& col) {
 	window.draw(moveCircle);
 }
 
+//drawing purple circles -> multi-jump path taken to get to possible end position
 void Board::drawMultiPath(const int& row, const int& col) {
 	sf::CircleShape moveCircle(25);
 	moveCircle.setFillColor(sf::Color::Magenta);
@@ -255,19 +252,7 @@ void Board::drawMultiPath(const int& row, const int& col) {
 	window.draw(moveCircle);
 }
 
-sf::RenderWindow& Board::getWindow() const { return window; }
-
-void Board::setMultiJump(bool boolean) { 
-	if (boolean == true) {
-		multiJump = true;
-	}
-	else {
-		multiJump = false;
-	}
-}
-
-bool Board::getMultiJump() const { return multiJump; }
-
+//counting pieces to display the number of pieces taken to window
 void Board::countPieces(sf::Text& txt) {
 	pieceCnt["Red"] = 0;
     pieceCnt["White"] = 0;
@@ -279,81 +264,55 @@ void Board::countPieces(sf::Text& txt) {
 			}
 		}
 	}
-
+	
+	//12 is the total number of checkers pieces
 	if (pieceCnt["Red"] < 12 || pieceCnt["White"] < 12) {
 		txt.setString("PIECES CAPTURED BY:\t\t RED - " + std::to_string(12 - pieceCnt["White"]) + "\t\t White - " + std::to_string(12 - pieceCnt["Red"]));
 	}
 }
 
+//check if current player doesn't have any pieces left
 bool Board::hasPlayerLost(const std::string& turn) const {
 	auto itr = pieceCnt.find(turn);
 	if (itr != pieceCnt.end()) {
 		if (itr->second == 0) {
-			//std::cout << turn << " LOST\n";
 			return true;
 		}
 	}
 	return false;
 }
 
+//check if current player has moves available
 bool Board::movesAvailable(const std::string& turn) {
-	available = false;
+	areMovesAvailable = false;
 	std::vector<std::pair<int, int>> directions;
 
-	if (found) {
+	if (isAttackFound) {
 		return true;
 	}
+	//checking for single moves since attacks weren't found 
 	for (int row = 0; row < boardSize; ++row) {
 		for (int col = 0; col < boardSize; ++col) {
-			if (board[row][col] != nullptr) {
-				if (board[row][col]->getisKing() && board[row][col]->getColorString() == turn) {
-					directions.push_back({ row + 1,col + 1 });
-					directions.push_back({ row + 1,col - 1 });
-					directions.push_back({ row - 1,col + 1 });
-					directions.push_back({ row - 1,col - 1 });
+			if (board[row][col] != nullptr && board[row][col]->getColorString() == turn) {
+				directions.clear();
+				populateDirections(turn, row, col, directions);
 
-					for (const auto& direction : directions) {
-						int Row = direction.first;
-						int Col = direction.second;
+				for (const auto& direction : directions) {
+					int Row = row + direction.first;
+					int Col = col + direction.second;
 
-						if (this->isWithinBounds(Row, Col) && board[Row][Col] == nullptr) {
-							return true;
-						}
-					}
-				}
-				else if (turn == "White" && board[row][col]->getColorString() == "White") {
-					directions.push_back({ row + 1,col + 1 });
-					directions.push_back({ row + 1,col - 1 });
-
-					for (const auto& direction : directions) {
-						int Row = direction.first;
-						int Col = direction.second;
-
-						if (this->isWithinBounds(Row, Col) && board[Row][Col] == nullptr) {
-							return true;
-						}
-					}
-				}
-				else if (turn == "Red" && board[row][col]->getColorString() == "Red") {
-					directions.push_back({ row - 1,col + 1 });
-					directions.push_back({ row - 1,col - 1 });
-
-					for (const auto& direction : directions) {
-						int Row = direction.first;
-						int Col = direction.second;
-
-						if (this->isWithinBounds(Row, Col) && board[Row][Col] == nullptr) {
-							return true;
-						}
+					if (this->isWithinBounds(Row, Col) && board[Row][Col] == nullptr) {
+						return true;
 					}
 				}
 			}
 		}
 	}
 	std::cout << "NO AVAILABLE MOVES\n";
-	return available;
+	return areMovesAvailable;
 }
 
+//find possible directions based on isKing or color
 void Board::populateDirections(const std::string& color, const int& row, const int& col, std::vector<std::pair<int, int>>& directions) {
 	if (board[row][col]->getisKing()) {
 		directions.push_back({ 1, -1 });
@@ -371,8 +330,7 @@ void Board::populateDirections(const std::string& color, const int& row, const i
 	}
 }
 
-bool Board::getAvailable() const { return available; }
-
+//work in progress -> rotating board every turn
 void Board::rotateBoard() {
 	std::reverse(board.begin(), board.end());
 	sf::View view = window.getView();
