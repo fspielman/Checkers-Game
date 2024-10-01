@@ -5,6 +5,17 @@ American Checkers game using the SFML C++ game library with:
 - Backward captures
 - A 5 minute timer to track players' time moving pieces
 
+### Prerequisites
+
+To use this project, you must install the [SFML library](https://www.sfml-dev.org/download/sfml/2.6.1/). Please choose your preferred method to get setup:
+
+- [SFML with the CMake Project Template](https://www.sfml-dev.org/tutorials/2.6/start-cmake.php)
+- [SFML and Visual Studio](https://www.sfml-dev.org/tutorials/2.6/start-vc.php)
+- [SFML and Code::Blocks (MinGW)](https://www.sfml-dev.org/tutorials/2.6/start-cb.php)
+- [SFML and Linux](https://www.sfml-dev.org/tutorials/2.6/start-linux.php)
+- [SFML and Xcode (macOS)](https://www.sfml-dev.org/tutorials/2.6/start-osx.php)
+- [Compiling SFML with CMake](https://www.sfml-dev.org/tutorials/2.6/compile-with-cmake.php)
+
 ## Piece Outlines
 
 ### Gray Outline
