@@ -1,7 +1,5 @@
 #pragma once
 #include <SFML\Graphics.hpp>
-//using std::string;
-#include <iostream>
 
 class Timer {
 private:
@@ -9,9 +7,9 @@ private:
 	sf::Clock clock;
 	bool isRunning;
 public:
+	sf::Time getTime() const;
 	Timer();
 	void startTimer();
-	sf::Time getTime() const;
 	void stopTimer();
 	void DisplayTime(sf::Text& txt);
 	bool isTimeFinished() const;
