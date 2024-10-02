@@ -29,6 +29,7 @@ public:
 	void setMultiJumpPiece(bool boolean);
 	void setOutlineColor(sf::Color);
 	Piece(std::string Color, int row, int col);
+	void checkKingPromotion(const int endRow, const std::string& color);
 	void makeKing();
 	bool isValidMove(const int& startRow, const int& startCol, const int& endRow, const int& endCol) const;
 	bool isOpponent(const std::shared_ptr<Piece>& piece) const;

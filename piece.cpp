@@ -65,11 +65,16 @@ Piece::Piece(std::string Color, int row, int col) : color(Color), isKing(false) 
 	checker.setOrigin(35.f, 35.f);
 }
 
+void Piece::checkKingPromotion(const int endRow, const std::string& color) {
+	if ((color == "White" && endRow == 7) || (color == "Red" && endRow == 0) && !isKing) {
+		this->makeKing();
+	}
+}
+
 void Piece::makeKing() {
 	isKing = true;
 	crownTexture.loadFromFile("images\\king.png");
 	checker.setTexture(&crownTexture);
-	std::cout << color << " KING\n";
 }
 
 bool Piece::isValidMove(const int& startRow, const int& startCol, const int& endRow, const int& endCol) const {
@@ -115,8 +120,6 @@ bool Piece::jumpDetected(const int& currentRow, const int& currentCol, Board& bo
 					//if another jump is found -> multi jump is true
 					board.setMultiJump(true); //flag used to draw multijump pathing when piece is selected set to true
 					this->setMultiJumpPiece(true);
-
-					std::cout << "ATTACK ENDS AT --- ROW: " << endRow << " Col: " << endCol << std::endl;
 				}
 
 				foundJump = true; //jump is found if valid atttack is found 
@@ -191,9 +194,7 @@ void Piece::attack(const int& startRow, const int& startCol, const int& endRow, 
 	checker.setPosition(endCol * tile + halfTile, endRow * tile + halfTile);
 	//set miuddle position to nullptr -> piece has been taken
 	board.setBoard((startRow + endRow) / 2, (startCol + endCol) / 2, nullptr);
-	if ((color == "White" && endRow == 7) || (color == "Red" && endRow == 0) && !isKing) {
-		this->makeKing();
-	}
+	this->checkKingPromotion(endRow, color);
 }
 
 //perform regular move
@@ -201,9 +202,7 @@ void Piece::move(const int& startRow, const int& startCol, int endRow, int endCo
 	if (isValidMove(startRow, startCol, endRow, endCol)) {
         checker.setPosition(endCol * tile + halfTile, endRow * tile + halfTile);
 		turnEnd = true;
-        if ((color == "White" && endRow == 7) || (color == "Red" && endRow == 0) && !isKing) {
-			this->makeKing();
-        }
+		this->checkKingPromotion(endRow, color);
     }
 	else {
 		//not a valid regular move
@@ -231,9 +230,7 @@ void Piece::multiJump(const int& startRow, const int& startCol, const int& endRo
 		//remove jumped pieces
 		board.setBoard(midRow, midCol, nullptr); 	}
 
-	if ((color == "White" && endRow == 7) || (color == "Red" && endRow == 0) && !isKing) {
-		this->makeKing();
-	}
+	this->checkKingPromotion(endRow, color);
 }
 
 //handles piece selection and movement
