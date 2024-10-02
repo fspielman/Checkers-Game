@@ -176,7 +176,7 @@ bool Board::findAttacks(const std::string& turn) {
 	for (int row = 0; row < boardSize; ++row) {
 		for (int col = 0; col < boardSize; ++col) {
 			if (board[row][col] != nullptr && board[row][col]->getColorString() == turn) {
-				//if jump found
+				//if jump found for piece
 				if (board[row][col]->jumpDetected(row, col, *this)) {
 					if (!(board[row][col]->getMultiJumpPiece())) { 
 						singleAttacks.push_back({ row,col }); //if multijump is not found for piece add it to single attack vector
@@ -213,9 +213,8 @@ bool Board::findAttacks(const std::string& turn) {
 		}
 	}
 
-	//longest attack
+	//setting the outline of the checker with the longest attack path to blue
 	if (isAttackFound) {
-		std::cout << "Longest attack path has length: " << maxPathLength << std::endl;
 		for (const auto& pos : longestAttack) {
 			if (board[pos[0].first][pos[0].second])
 				board[pos[0].first][pos[0].second]->setOutlineColor(sf::Color::Blue);
