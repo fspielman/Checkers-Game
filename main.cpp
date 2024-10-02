@@ -7,17 +7,22 @@ int main()
 {
 	bool isFullscreen = false;
 
-	sf::RenderWindow window(sf::VideoMode(900, 850), "Checkers", sf::Style::Titlebar | sf::Style::Close | sf::Style::Resize);
-	sf::View view(sf::FloatRect(0, 0, 900, 850));
+	sf::RenderWindow window(sf::VideoMode(900, 850), "Checkers", sf::Style::Titlebar | sf::Style::Close);
+	sf::View view(sf::FloatRect(0, 0, 900, 850)); //in progress for rotating board
 
+	//initializing board
 	Board board(window);
 	board.initBoard();
 
+	//setting turn to white
 	std::string turn = "White";
 
+	//no piece is selected at beginning
 	bool shapeSelected = false;
+	//moves are available at beginning
 	bool movesAvailable = true;
 	
+	//initiating positions used
 	int startRow = -1;
 	int startCol = -1;
 	int row;
@@ -26,9 +31,9 @@ int main()
 	std::shared_ptr<Piece> selectedPiece = nullptr;
 	std::shared_ptr<Piece> isPieceAtTargetPos = nullptr;
 	bool jumpsAvailable = false;
-	std::string otherColor;
-	std::vector<std::pair<int, int>> visitedSquare;
+	std::string colorOfSelectedPiece;
 
+	//handling text for timers and piece counter
 	sf::Font TimesNewRoman;
 	if (!TimesNewRoman.loadFromFile("times.ttf")) {
 		return -1;
@@ -51,7 +56,8 @@ int main()
 	whiteClockTxt.setFillColor(sf::Color::White);
 	whiteClockTxt.setPosition(820, 25);
 
-	redClock.DisplayTime(redClockTxt); //display red at beginning -> turn != red
+	redClock.DisplayTime(redClockTxt); //display red timer at the beginning -> turn != red
+
 
 	while (window.isOpen())
 	{
@@ -61,33 +67,32 @@ int main()
 			if (event.type == sf::Event::Closed)
 				window.close();
 		}
+		//checking lose conditions
 		if (!board.hasPlayerLost(turn) && movesAvailable && !whiteClock.isTimeFinished() && !redClock.isTimeFinished()) {
+			//if the left mouse button is pressed
 			if (event.type == sf::Event::MouseButtonPressed) {
 				if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-
+					//if user left clicked on the board
 					sf::Vector2i mousePosition = sf::Mouse::getPosition(window);
+					//board is 800x800 - 100x100 per tile
 					if (mousePosition.x >= 0 && mousePosition.x < 800 && mousePosition.y >= 0 && mousePosition.y < 800){
 						col = mousePosition.x / 100;
 						row = mousePosition.y / 100;
 					}
+					//if user clicked outside of the board -> continue (no selections can be made)
 					else{
 						continue;
 					}
-					std::cout << "Clicked at R " << row << " C " << col << std::endl;
 
+					//pointer to check if there is piece at the end position of move -> used after piece is selected
 					isPieceAtTargetPos = board.getBoard(row, col);
+					//is there a piece selected
 					if (selectedPiece && shapeSelected) {
 						sf::Color DarkGray(99, 102, 106);
+						//is there a piece at the end position where the user tried to move to
 						if (isPieceAtTargetPos) {
-							if (otherColor == "DarkGray") {
-
-								if (selectedPiece->isOpponent(isPieceAtTargetPos)) {
-									std::cout << "OCCUPIED BY OPPOSITE PIECE\n";
-								}
-								else {
-									std::cout << "OCUPPIED BY SAME PIECE\n";
-								}
-
+							//reseting outline of selected piece 
+							if (colorOfSelectedPiece == "DarkGray") {
 								selectedPiece->setOutlineColor(DarkGray);
 							}
 							else {
@@ -98,35 +103,39 @@ int main()
 						}
 						else {
 							selectedPiece->selectPiece(shapeSelected, board, jumpsAvailable);
+							//if turnEnd=true then move is valid
 							if (selectedPiece->getTurnEnd()) {
-								std::cout << "Moved to R " << row << " C " << col << std::endl;
-
+								//update piece position and set its previous position to null
 								board.setBoard(row, col, selectedPiece);
 								board.setBoard(startRow, startCol, nullptr);
+
+								//reset multijump pathing 
 								selectedPiece->resetJumpMoves();
 
 								selectedPiece = nullptr;
 
-								// reset attacks and change turn
+								//reset attack outlines and change turn
 								board.resetAttackOutline();
 								board.changeTurn(turn);
 
-							//	board.rotateBoard();
-							//	view.rotate(180);
-							//	whiteClockTxt.rotate(180);
-							//	redClockTxt.rotate(180);
+								/****** in progress for rotating board  *******/
+								//board.rotateBoard();
+								//view.rotate(180);
+								//whiteClockTxt.rotate(180);
+								//redClockTxt.rotate(180);
 
-								// find other color attacks
-								jumpsAvailable = board.findAttacks(turn/*, window*/);
+								// find other color's attacks
+								jumpsAvailable = board.findAttacks(turn);
 
-								//regular moves
+								//check if there are regular moves avaiable if no jump moves are found
 								if (!jumpsAvailable) {
 									movesAvailable = board.movesAvailable(turn);
 								}
 								
-								//count pieces and game conditions
+								//count pieces
 								board.countPieces(pieceCntTxt);
 								
+								//starting and stopping timers based on the turn
 								if (turn == "Red") {
 									redClock.startTimer();
 									whiteClock.stopTimer();
@@ -135,42 +144,36 @@ int main()
 									whiteClock.startTimer();
 									redClock.stopTimer();
 								}
-
-
-								//std::cout << turn << std::endl;
 							}
 						}
 					}
 					else {
+						//get selected piece from where the user clicked mouse
 						selectedPiece = board.getBoard(row, col);
-
+						//if selectedPiece is not null and the selected piece corresponds to the correct turn
 						if (selectedPiece && selectedPiece->getColorString() == turn) {
+							//beginning of selected piece, changes outline to yellow and sets shapeSelected to true
 							selectedPiece->selectPiece(shapeSelected, board, jumpsAvailable);
 							startRow = row;
 							startCol = col;
-							std::cout << "Selected piece at R " << row << " C " << col << std::endl;
-						}
-						else if (selectedPiece && selectedPiece->getColorString() != turn) std::cout << "WRONG TURN\n";
-						else std::cout << "NO PIECE AT R " << row << " C " << col << std::endl;
 
-						if (selectedPiece != nullptr) {
-							otherColor = selectedPiece->getOutlineColorString();
+							//if correct piece is selected, get the its outline color->function only returns blue and dark gray(not yellow)
+							//used to reset color when piece is deselected or wrong move is made
+							colorOfSelectedPiece = selectedPiece->getOutlineColorString();
 						}
 
 					}
 
 					sf::sleep(sf::milliseconds(100));
 
-					/*
-					while (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-
-					}
-					*/
 				}
 			}
 		}
+		//one of the players lost
 		else {
-			// DO END MENU
+			/******************** Implement end menu here (Work in progress) **********************/
+
+			//display losing conditions in the terminal/console window
 			if (board.hasPlayerLost(turn)) std::cout << turn << " LOST -- all pieces were taken\n";
 			else if (!movesAvailable) std::cout << turn << " LOST -- no moves available\n";
 			else if (whiteClock.isTimeFinished()) {
@@ -181,24 +184,24 @@ int main()
 			}
 			whiteClock.stopTimer();
 			redClock.stopTimer();
-			//break;
 		}
 
 		//display
 		window.clear();
 		board.drawBoard();
+		//draw moves for the selected shape
 		if (shapeSelected) board.drawMoves(selectedPiece->getColorString(), row, col);
 		board.draw();
 
 		window.draw(pieceCntTxt);
-
+		//display timer for current color's turn -> other timer is not changing
 		(turn == "White") ? whiteClock.DisplayTime(whiteClockTxt) : redClock.DisplayTime(redClockTxt);
 		window.draw(redClockTxt);
 		window.draw(whiteClockTxt);
 
 		window.display();
 
-		//keybinds
+		//press q to quit the game
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Q)) {
 			window.close();
 		}
