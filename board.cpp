@@ -189,7 +189,6 @@ bool Board::findAttacks(const std::string& turn) {
 					std::vector<std::vector<std::pair<int, int>>> currentPath = piece->getLongestPath();
 					int currentPathLength = piece->getLongestPath()[0].size();
 
-					std::cout << "PATH SIZE----" << currentPathLength << std::endl;
 					//if current multi-jump path length is greater than the current maximum multi-jump path length
 					if (currentPathLength > maxPathLength) {
 						maxPathLength = currentPathLength;
